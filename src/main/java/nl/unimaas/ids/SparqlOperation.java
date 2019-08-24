@@ -1,12 +1,16 @@
 package nl.unimaas.ids;
 
-import nl.unimaas.ids.operations.QueryOperation;
-import nl.unimaas.ids.operations.SparqlOperationFactory;
-import nl.unimaas.ids.operations.SparqlExecutorInterface;
+import nl.unimaas.ids.operations.QueryOperations;
 import nl.unimaas.ids.operations.Split;
+import nl.unimaas.ids.operations.queries.SparqlExecutorInterface;
+import nl.unimaas.ids.operations.queries.SparqlQueryFactory;
+
+import org.eclipse.rdf4j.repository.Repository;
+
 import picocli.CommandLine;
 
 public class SparqlOperation {
+	
 
 	public static void main(String[] args) throws Exception {
 		try { 
@@ -15,20 +19,23 @@ public class SparqlOperation {
 			if(cli.help)
 				printUsageAndExit();
 			
-			if (cli.queryOperation == QueryOperation.split) {
-				Split splitter = new Split(cli.endpointUrl, cli.endpointUpdateUrl, cli.username, cli.password, cli.variables);
-				splitter.executeSplit(cli.splitClass, cli.splitProperty, cli.splitDelimiter, cli.splitDelete,  cli.trimDelimiter, cli.uriExpansion);
-			} else {			
-				//System.out.println("Performing operation: " + cli.queryOperation.toString());
-				SparqlExecutorInterface sparqlExecutor = SparqlOperationFactory.getSparqlExecutor(cli.queryOperation, cli.endpointUrl, cli.username, cli.password, cli.variables);
-				
+			Repository repo = SparqlRepositoryFactory.getRepository(cli.endpointUrl, cli.repositoryId, cli.username, cli.password);
+			
+			if (cli.queryOperation == QueryOperations.split) {
+				Split splitter = new Split(repo, cli.varOutputGraph, cli.splitBufferSize);
+				splitter.executeSplit(cli.splitClass, cli.splitProperty, cli.splitDelimiter,  cli.splitQuote, cli.splitDelete, cli.uriExpansion);
+			} else {
+				// Execute SPARQL query operations
+				System.out.println("Performing operation: " + cli.queryOperation.toString());
+				SparqlExecutorInterface sparqlExecutor = SparqlQueryFactory.getSparqlExecutor(cli.queryOperation, repo, 
+						cli.varInputGraph, cli.varOutputGraph, cli.varServiceUrl);
 				if (cli.sparqlQuery != null) {
-					// Properly get select results using asList
-					// https://rdf4j.eclipse.org/documentation/programming/repository/
+					// Execute SPARQL query string passed to -sp
+					// TODO: Properly get select results using asList https://rdf4j.eclipse.org/documentation/programming/repository/
 					sparqlExecutor.executeSingleQuery(cli.sparqlQuery);
 				}
-				
 				if (cli.inputFile != null) {
+					// Execute SPARQL queries from files passed to -f
 					sparqlExecutor.executeFiles(cli.inputFile);
 				}
 			}

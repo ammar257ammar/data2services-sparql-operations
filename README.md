@@ -57,6 +57,22 @@ docker run -it --rm vemonet/data2services-sparql-operations -op select \
 
 ---
 
+### Update
+
+Multiple `INSERT` on [graphdb.dumontierlab.com](http://graphdb.dumontierlab.com/), using files in a repository from the local file system.
+
+```shell
+docker run -it --rm vemonet/data2services-sparql-operations \
+  -ep "http://graphdb.dumontierlab.com" -rep "test" \
+  #-ep "http://graphdb.dumontierlab.com/repositories/test/statements" \
+  -op update -un $USERNAME -pw $PASSWORD \
+  -f "https://raw.githubusercontent.com/MaastrichtU-IDS/data2services-sparql-operations/master/src/main/resources/example-insert.rq"
+```
+
+* Note that GraphDB and RDF4J Server require to add `/statements` at the end of the endpoint URL when doing an update.
+
+---
+
 ### Construct
 
 On [graphdb.dumontierlab.com](http://graphdb.dumontierlab.com/) using GitHub URL to get the SPARQL query from a file.
@@ -69,20 +85,6 @@ docker run -it --rm vemonet/data2services-sparql-operations -op construct \
 
 ---
 
-### Update
-
-Multiple `INSERT` on [graphdb.dumontierlab.com](http://graphdb.dumontierlab.com/), using files in a repository from the local file system.
-
-```shell
-docker run -it --rm -v "/data/data2services-transform-repository/sparql/insert-biolink/drugbank":/data \
-  vemonet/data2services-sparql-operations -f "/data" -op update \
-  -ep "http://graphdb.dumontierlab.com/repositories/test/statements" \
-  -un USERNAME -pw PASSWORD
-```
-
-* GraphDB requires to add `/statements` at the end of the endpoint URL for `INSERT`
-
----
 
 ### GitHub repository
 
@@ -115,13 +117,16 @@ docker run -it --rm vemonet/data2services-sparql-operations \
 E.g.: a statement with value "1234,345,768" would be splitted in 3 statements "1234", "345" and "768".
 
 ```shell
-docker run -it --rm \
+docker run -it \
   vemonet/data2services-sparql-operations -op split \
   --split-property "http://w3id.org/biolink/vocab/has_participant" \
   --split-class "http://w3id.org/biolink/vocab/GeneGrouping" \
-  --split-delimiter ","
+  --split-delimiter "," \
+  --split-delete \ # Delete the splitted statement
+  --uri-expansion "https://w3id.org/data2services/" \ # Use 'infer' to do it automatically using prefixcommons
+  #--trim-delimiter '"' \
   -ep "http://graphdb.dumontierlab.com" \ # RDF4J server URL
-  -uep "test" \ # RDF4J server repository ID
+  -rep "test" \ # RDF4J server repository ID
   -un USERNAME -pw PASSWORD
   
 # For SPARQLRepository
@@ -133,26 +138,33 @@ docker run -it --rm \
 
 # Set variables
 
-Variables can be set in the SPARQL queries using a `_` at the beggining: `?_myVar`. See example:
+3 variables can be set in the SPARQL queries using a `?_`: `?_inputGraph`, `?_outputGraph` and `?_serviceUrl`. See example:
 
 ```SPARQL
-SELECT DISTINCT ?Concept WHERE {
-  GRAPH <?_graph> {
-    [] a ?Concept .
+INSERT {
+  GRAPH <?_outputGraph> {
+    ?Concept a <https://w3id.org/data2services/Concept> .
   }
-} LIMIT ?_limit
+} WHERE {
+  SERVICE <?_serviceUrl> {
+    GRAPH <?_inputGraph> {
+      SELECT * {
+        [] a ?Concept .
+      } LIMIT 10 
+} } }
 ```
 
-Execute with [2 variables](https://github.com/MaastrichtU-IDS/data2services-sparql-operations/blob/master/src/main/resources/example-select-variables.rq):
+Execute:
 
 ```shell
 docker run -it --rm vemonet/data2services-sparql-operations \
-  -op select -ep "http://graphdb.dumontierlab.com/repositories/ncats-red-kg" \
-  -f "https://raw.githubusercontent.com/MaastrichtU-IDS/data2services-sparql-operations/master/src/main/resources/example-select-variables.rq" \
-  -var limit:10 graph:https://data2services/test
+  -op update -ep "http://graphdb.dumontierlab.com/repositories/test/statements" \
+  -un $USERNAME -pw $PASSWORD \
+  -f "https://raw.githubusercontent.com/MaastrichtU-IDS/data2services-sparql-operations/master/src/main/resources/example-insert-variables.rq" \
+  --var-inputGraph http://www.ontotext.com/explicit \
+  --var-outputGraph https://w3id.org/data2services/output \
+  --var-serviceUrl http://localhost:7200/repositories/test
 ```
-
-* Make sure to place the `-var` **parameters at the end of the commandline** to be able to define an unlimited number of variables without issues.
 
 ---
 
@@ -166,13 +178,17 @@ docker run -it --rm -v "$PWD/sparql/insert-biolink/drugbank":/data \
   vemonet/data2services-sparql-operations \
   -f "/data" -un USERNAME -pw PASSWORD \
   -ep "http://graphdb.dumontierlab.com/repositories/ncats-test/statements" \
-  -var serviceUrl:http://localhost:7200/repositories/test inputGraph:http://data2services/graph/xml2rdf outputGraph:https://w3id.org/data2services/graph/biolink/drugbank
+  -varServiceUrl http://localhost:7200/repositories/test \ 
+  -varInputGraph http://data2services/graph/xml2rdf \ 
+  -varOutputGraph https://w3id.org/data2services/graph/biolink/drugbank
 
 # HGNC
 docker run -it --rm -v "$PWD/sparql/insert-biolink/hgnc":/data \
   vemonet/data2services-sparql-operations \
   -f "/data" -un USERNAME -pw PASSWORD \
   -ep "http://graphdb.dumontierlab.com/repositories/ncats-test/statements" \
-  -var serviceUrl:http://localhost:7200/repositories/test inputGraph:http://data2services/graph/autor2rml outputGraph:https://w3id.org/data2services/graph/biolink/hgnc
+  --var-serviceUrl http://localhost:7200/repositories/test \
+  --var-inputGraph http://data2services/graph/autor2rml \
+  --var-outputGraph https://w3id.org/data2services/graph/biolink/hgnc
 ```
 

@@ -1,4 +1,4 @@
-package nl.unimaas.ids.operations;
+package nl.unimaas.ids.operations.queries;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,7 +7,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -18,33 +17,27 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.eclipse.rdf4j.repository.sparql.SPARQLRepository;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
-public abstract class AbstractSparqlOperation implements SparqlExecutorInterface {
-	protected Logger logger = LoggerFactory.getLogger(AbstractSparqlOperation.class.getName());
-	private SPARQLRepository repo;
-	HashMap<String, String> variablesHash = new HashMap<String, String>();
+public abstract class AbstractSparqlQuery implements SparqlExecutorInterface {
+	protected Logger logger = LoggerFactory.getLogger(AbstractSparqlQuery.class.getName());
+	private Repository repo;
 	
-	public AbstractSparqlOperation(String endpoint, String username, String password, String[] variables) {
-		repo = new SPARQLRepository(endpoint);
-		repo.setUsernameAndPassword(username, password);
-		repo.initialize();
+	String varInputGraph;
+	String varOutputGraph;
+	String varServiceUrl;
+	
+	public AbstractSparqlQuery(Repository repo, String varInputGraph, String varOutputGraph, String varServiceUrl) {
+		this.repo = repo;
 		
-		if (variables != null) {
-	        for (int i=0; i<variables.length; i++)
-	        {
-	            String[] variableSplitted = variables[i].split(":", 2);
-	            if (variableSplitted != null) {
-		            // Split on first : (varGraph:http://graph gives {"?_varGraph": "http://graph"}
-	            	variablesHash.put("\\?_" + variableSplitted[0], variableSplitted[1]);
-	            }
-	        }
-		}
+		this.varInputGraph = varInputGraph;
+		this.varOutputGraph = varOutputGraph;
+		this.varServiceUrl = varServiceUrl;
 	}
 
 	// Executed when files are provided. Execute from single file from URL or file path, or multiple files from directory
@@ -53,9 +46,10 @@ public abstract class AbstractSparqlOperation implements SparqlExecutorInterface
 		try (RepositoryConnection conn = repo.getConnection()) {
 			if (filePath.startsWith("https://github.com/")) {
 				// Crawl a given path in a github repository to execute .rq files
-				logger.info("Crawling GitHub page...");
+				logger.info("Crawling GitHub page: " + filePath);
 				ArrayList<URL> queryList = crawlGithubToGetQueries(filePath);
 				for (URL queryUrl : queryList) {
+					logger.info("Executing GitHub URL: " + queryUrl.toString());
 					executeFromUrl(conn, queryUrl);
 				}
 			} else if (filePath.matches("^(http|https|ftp)://.*$")) {
@@ -83,8 +77,6 @@ public abstract class AbstractSparqlOperation implements SparqlExecutorInterface
 					while (iterator.hasNext()) {
 						File f = iterator.next();
 						String queryString = resolveVariables(FileUtils.readFileToString(f, "UTF-8"));
-						logger.info("Executing: ");
-						logger.info(queryString);
 						executeQuery(conn, queryString, f.getPath());
 					}
 					
@@ -94,8 +86,6 @@ public abstract class AbstractSparqlOperation implements SparqlExecutorInterface
 				} else {
 					// Single file provided
 					String queryString = resolveVariables(FileUtils.readFileToString(inputFile, "UTF-8"));
-					logger.info("Executing: ");
-					logger.info(queryString);
 					executeQuery(conn, queryString, inputFile.getPath());
 				}
 			}
@@ -105,19 +95,17 @@ public abstract class AbstractSparqlOperation implements SparqlExecutorInterface
 		//repo.shutDown();
 	}
 	
-	// We replace ?_myVar with the corresponding value
+	// We replace ?_var with the corresponding value
 	private String resolveVariables(String query) {
-		scanForVariables(query);
-		
-		String replacedQuery = query;
-		for (Map.Entry<String, String> entry : variablesHash.entrySet()) {
-	        //System.out.println(entry.getKey() + " = " + entry.getValue());
-			replacedQuery = replacedQuery.replaceAll(entry.getKey().toString(), entry.getValue().toString());
-		}
-	    return replacedQuery;
+		//scanForVariables(query);
+		query = query.replaceAll("\\?_inputGraph", varInputGraph);
+		query = query.replaceAll("\\?_outputGraph", varOutputGraph);
+		query = query.replaceAll("\\?_serviceUrl", varServiceUrl);
+		//logger.info("    SPARQL query after replace all: " + query);
+	    return query;
 	}
 	
-	// Scan files to check for the variables
+	// TO REMOVE? Scan files to check for the variables
 	public ArrayList<String> scanForVariables(String query) {
 		ArrayList<String> queryVariables = new ArrayList<String>();
 		Pattern p = Pattern.compile("<\\?_(.*?)>");
@@ -136,8 +124,6 @@ public abstract class AbstractSparqlOperation implements SparqlExecutorInterface
 	public void executeSingleQuery(String queryString) throws Exception {
 		try (RepositoryConnection conn = repo.getConnection()) {
 			queryString = resolveVariables(queryString);
-			logger.info("Executing: ");
-			logger.info(queryString);
 			executeQuery(conn, queryString, null);
 			
 		} catch (Exception e) {
@@ -156,8 +142,7 @@ public abstract class AbstractSparqlOperation implements SparqlExecutorInterface
 			
 		} else {	
 			String queryString = resolveVariables(FileUtils.readFileToString(urlFile, "UTF-8"));				
-			logger.info("Executing single file from URL: ");
-			logger.info(queryString);
+			logger.info("Executing single file from URL: " + url.toString());
 			executeQuery(conn, queryString, null);
 		}
 	}
@@ -173,8 +158,6 @@ public abstract class AbstractSparqlOperation implements SparqlExecutorInterface
 		int queryCount = 0;
 		for(String query : queries) {
 			String queryString = resolveVariables(query);
-			logger.info("Executing: ");
-			logger.info(queryString);
 			executeQuery(conn, queryString, FilenameUtils.removeExtension(inputFile.getPath()) + "_query_" + queryCount++);
 		}		
 	}
@@ -182,8 +165,9 @@ public abstract class AbstractSparqlOperation implements SparqlExecutorInterface
 	public ArrayList<URL> crawlGithubToGetQueries(String githubUrl) throws IOException {
 		ArrayList<URL> queryList = new ArrayList<URL>();
 		String html = Jsoup.connect(githubUrl).get().html();
-		Pattern pattern = Pattern.compile("href=\"(.*?\\.rq)\"");
+		Pattern pattern = Pattern.compile("href=\"(\\/.*?\\.rq)\"");
         Matcher matcher = pattern.matcher(html);
+        logger.info("SPARQL queries URL found by crawling " + githubUrl + " :");
         while (matcher.find()) {
         	queryList.add(new URL("https://raw.githubusercontent.com" + matcher.group(1).replace("blob/", "")));
         	logger.info("https://raw.githubusercontent.com" + matcher.group(1).replace("blob/", ""));

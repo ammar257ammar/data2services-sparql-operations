@@ -1,4 +1,4 @@
-package nl.unimaas.ids.operations;
+package nl.unimaas.ids.operations.queries;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -7,6 +7,7 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.query.GraphQueryResult;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.eclipse.rdf4j.query.QueryResults;
+import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -16,15 +17,17 @@ import org.slf4j.LoggerFactory;
 /**
  * A class to upload to GraphDB SPARQL endpoint
  */
-public class SparqlConstruct extends AbstractSparqlOperation {
+public class SparqlConstruct extends AbstractSparqlQuery {
 
-	public SparqlConstruct(String endpoint, String username, String password, String[] variables) {
-		super(endpoint, username, password, variables);
+	public SparqlConstruct(Repository repo, String varInputGraph, String varOutputGraph, String varServiceUrl) {
+		super(repo, varInputGraph, varOutputGraph, varServiceUrl);
 		logger = LoggerFactory.getLogger(SparqlConstruct.class.getName());
 	}
 
 	public void executeQuery(RepositoryConnection conn, String queryString, String outputFilepath) throws RepositoryException, MalformedQueryException, IOException {
-		logger.info("Executing construct query...");
+		logger.info("Executing CONSTRUCT query:");
+		logger.info(queryString);
+		
 		// Query the SPARQL endpoint
 		GraphQueryResult graphResult = conn.prepareGraphQuery(queryString).evaluate();
 		logger.info("SPARQL endpoint query done");
