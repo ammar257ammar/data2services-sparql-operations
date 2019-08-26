@@ -15,7 +15,7 @@ public class CliOptions {
 	@Option(names= {"-f", "--filepath"}, description = "Path of file(s) to execute. Single file from URL or filepath. Multiple files from directory (query files must have .rq extension). YAML file.")
 	String inputFile = null;
 	
-	@Option(names= {"-op", "--operation"}, description = "SPARQL query operation (update, construct, select, split). Default is update")
+	@Option(names= {"-op", "--operation"}, description = "SPARQL query operation (update, construct, select, split, expand). Default is update")
 	QueryOperations queryOperation = QueryOperations.update;
 	
 	
@@ -50,7 +50,7 @@ public class CliOptions {
 	char splitDelimiter = ',';
 	
 	@Option(names= {"--split-quote"}, description = "Delimiter for the Trim operation. Default: '\"'")
-	char splitQuote = '"'; // TODO: is null char good here? Should we let free?
+	char splitQuote = ' '; // TODO: is null char good here? Should we let free?
 	
 	@Option(names= {"--split-property"}, description = "Property to split. e.g.: 'http://www.w3.org/2000/01/rdf-schema#label'")
 	String splitProperty = null;
@@ -66,7 +66,20 @@ public class CliOptions {
 	
 	
 	// URI expansion params
-	@Option(names= {"-uex", "--uri-expansion"}, description = "Expan splitted values with URI, use \"infer\" to do it automatically")
+	
+	@Option(names= {"--expand-property"}, description = "Property to split. e.g.: 'http://www.w3.org/2000/01/rdf-schema#label'")
+	String expandProperty = null;
+	
+	@Option(names= {"--expand-class"}, description = "Class to split. e.g.: 'http://w3id.org/biolink/vocab/GeneGrouping'")
+	String expandClass = null;
+	
+	@Option(names= {"-uex", "--uri-expansion"}, description = "Expan values with URI, use \"infer\" to do it automatically")
 	String uriExpansion = null;
+	
+	@Option(names= {"--infer-expansion-prefix"}, description = "Used when --uri-expansion = \"infer\". The created prefixes will be expanded with this value as the new perdicate")
+	String inferExpansionPrefix = null;
+	
+	@Option(names= {"--expand-delete"}, description = "Should we delete the original expanded statements? Default: false")
+	boolean expandDelete = false;
 	
 }

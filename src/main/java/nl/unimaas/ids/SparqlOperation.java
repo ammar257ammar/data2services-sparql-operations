@@ -1,5 +1,6 @@
 package nl.unimaas.ids;
 
+import nl.unimaas.ids.operations.Expand;
 import nl.unimaas.ids.operations.QueryOperations;
 import nl.unimaas.ids.operations.Split;
 import nl.unimaas.ids.operations.queries.SparqlExecutorInterface;
@@ -23,7 +24,11 @@ public class SparqlOperation {
 			
 			if (cli.queryOperation == QueryOperations.split) {
 				Split splitter = new Split(repo, cli.varOutputGraph, cli.splitBufferSize);
-				splitter.executeSplit(cli.splitClass, cli.splitProperty, cli.splitDelimiter,  cli.splitQuote, cli.splitDelete, cli.uriExpansion);
+				splitter.executeSplit(cli.splitClass, cli.splitProperty, cli.splitDelimiter,  cli.splitQuote, cli.splitDelete);
+			
+			}else if (cli.queryOperation == QueryOperations.expand) {
+				Expand expanner = new Expand(repo, cli.varOutputGraph, cli.splitBufferSize);
+				expanner.executeExpand(cli.expandClass, cli.expandProperty, cli.expandDelete, cli.uriExpansion, cli.inferExpansionPrefix);							
 			} else {
 				// Execute SPARQL query operations
 				System.out.println("Performing operation: " + cli.queryOperation.toString());
