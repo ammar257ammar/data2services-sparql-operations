@@ -54,12 +54,18 @@ public class Split {
 			char splitQuote, boolean deleteSplittedTriples) 
 			throws RepositoryException,
 			MalformedQueryException, IOException {
-
+				
+		String delim = String.valueOf(splitDelimiter);
+				
+		if(splitDelimiter == '|'){
+			delim = "\\|";
+		}
+				
 		String queryString = "SELECT ?s ?p ?toSplit ?g WHERE {"
 				+ "    GRAPH ?g {" + "    	?s a <" + classToSplit + "> ;"
 				+ "      ?p ?toSplit ." + "    	FILTER(?p = <"
 				+ propertyToSplit + ">)." + "FILTER(regex(?toSplit, '"
-				+ splitDelimiter + "'))" + "    } }";
+				+ delim + "'))" + "    } }";
 
 		System.out.println(queryString);
 		System.out.println();
