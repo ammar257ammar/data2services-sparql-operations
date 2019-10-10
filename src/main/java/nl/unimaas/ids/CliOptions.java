@@ -50,7 +50,7 @@ public class CliOptions {
 	char splitDelimiter = ',';
 	
 	@Option(names= {"--split-quote"}, description = "Delimiter for the Trim operation. Default: '\"'")
-	char splitQuote = ' '; // TODO: is null char good here? Should we let free?
+	char splitQuote = '"'; // TODO: is null char good here? Should we let free?
 	
 	@Option(names= {"--split-property"}, description = "Property to split. e.g.: 'http://www.w3.org/2000/01/rdf-schema#label'")
 	String splitProperty = null;
