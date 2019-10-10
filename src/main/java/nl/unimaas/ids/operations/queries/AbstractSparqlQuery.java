@@ -101,7 +101,7 @@ public abstract class AbstractSparqlQuery implements SparqlExecutorInterface {
 		query = query.replaceAll("\\?_input", varInputGraph);
 		query = query.replaceAll("\\?_output", varOutputGraph);
 		query = query.replaceAll("\\?_serviceUrl", varServiceUrl);
-		//logger.info("    SPARQL query after replace all: " + query);
+		logger.info("    SPARQL query after replace all: " + query);
 	    return query;
 	}
 	
