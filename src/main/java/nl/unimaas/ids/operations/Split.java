@@ -71,7 +71,7 @@ public class Split {
 		                String propertyToSplit = csvRecord.get(1);
 		                String splitDelimiter = csvRecord.get(2);
 	
-		                this.executeSplit(classToSplit, propertyToSplit, splitDelimiter.charAt(0), '"', true);
+		                this.executeSplit(classToSplit, propertyToSplit, splitDelimiter, "\"", true);
 		                
 		            }
 		        }
@@ -82,25 +82,35 @@ public class Split {
 	}
 
 	public TupleQueryResult executeSplit(String classToSplit,
-			String propertyToSplit, char splitDelimiter,
-			char splitQuote, boolean deleteSplittedTriples) 
+			String propertyToSplit, String splitDelimiter,
+			String splitQuote, boolean deleteSplittedTriples) 
 			throws RepositoryException,
 			MalformedQueryException, IOException {
 				
-		String delim = String.valueOf(splitDelimiter);
-				
-		if(splitDelimiter == '|'){
+		String delim = splitDelimiter;
+			
+		String queryString = "";
+		
+		if(splitDelimiter.equals("|")){
 			logger.info("escaping delimiter");
 			//delim = "\\|"; // this is for Graph db
 			delim = "|"; // this is for Virtuoso
-		}
+		
 				
-		String queryString = "SELECT ?s ?p ?toSplit ?g WHERE {"
+			queryString = "SELECT ?s ?p ?toSplit ?g WHERE {"
 				+ "    GRAPH ?g {" + "    	?s a <" + classToSplit + "> ;"
 				+ "      ?p ?toSplit ." + "    	FILTER(?p = <"
-				+ propertyToSplit + ">)." + "FILTER(regex(?toSplit, '"
+				+ propertyToSplit + ">)." + "FILTER(regex(?toSplit, '\\"
 				+ delim + "'))" + "    } }";
+		}else {
 
+			queryString = "SELECT ?s ?p ?toSplit ?g WHERE {"
+					+ "    GRAPH ?g {" + "    	?s a <" + classToSplit + "> ;"
+					+ "      ?p ?toSplit ." + "    	FILTER(?p = <"
+					+ propertyToSplit + ">)." + "FILTER(regex(?toSplit, '"
+					+ delim + "'))" + "    } }";
+		}
+		
 		System.out.println(queryString);
 		System.out.println();
 
@@ -143,7 +153,7 @@ public class Split {
 				
 		    	for (String splitFragment: splitFragments) {          
 			
-						if(splitQuote != ' ') {
+						if(!splitQuote.equals(" ")) {
 							splitFragment = splitFragment.replaceAll("^"+splitQuote+"|"+splitQuote+"$", "");				
 						}
 	

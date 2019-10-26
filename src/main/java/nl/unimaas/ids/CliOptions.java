@@ -49,10 +49,10 @@ public class CliOptions {
 	
 	// Split params
 	@Option(names= {"--split-delimiter"}, description = "Delimiter for the Split operation. Default: ','")
-	char splitDelimiter = ',';
+	String splitDelimiter = ",";
 	
 	@Option(names= {"--split-quote"}, description = "Delimiter for the Trim operation. Default: '\"'")
-	char splitQuote = '"'; // TODO: is null char good here? Should we let free?
+	String splitQuote = "\""; // TODO: is null char good here? Should we let free?
 	
 	@Option(names= {"--split-property"}, description = "Property to split. e.g.: 'http://www.w3.org/2000/01/rdf-schema#label'")
 	String splitProperty = null;
