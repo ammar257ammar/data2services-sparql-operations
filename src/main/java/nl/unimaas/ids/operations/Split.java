@@ -90,6 +90,7 @@ public class Split {
 		String delim = String.valueOf(splitDelimiter);
 				
 		if(splitDelimiter == '|'){
+			logger.info("escaping delimiter");
 			delim = "\\|";
 		}
 				
