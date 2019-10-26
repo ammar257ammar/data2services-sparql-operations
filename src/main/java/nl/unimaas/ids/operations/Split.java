@@ -91,7 +91,8 @@ public class Split {
 				
 		if(splitDelimiter == '|'){
 			logger.info("escaping delimiter");
-			delim = "\\|";
+			//delim = "\\|"; // this is for Graph db
+			delim = "|"; // this is for Virtuoso
 		}
 				
 		String queryString = "SELECT ?s ?p ?toSplit ?g WHERE {"
