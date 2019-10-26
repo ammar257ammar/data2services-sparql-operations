@@ -137,20 +137,12 @@ public class Split {
 				if (!graphFromParam) {
 					graphIri = f.createIRI(bindingSet.getValue("g").stringValue());
 				}
-				
-				CSVFormat format = CSVFormat.newFormat(splitDelimiter);
-				
-				if(splitQuote != ' ') {
-					//format = format.withQuote(splitQuote);					
-				}
-				
-				CSVParser parser = CSVParser.parse(stringToSplit, format);
-				
-				for (CSVRecord csvRecord : parser) {
-					for (int i=0; i<csvRecord.size(); i++){
 						
-						String splitFragment = csvRecord.get(i);
-						
+		    	String[] splitFragments = stringToSplit.split(delim+"(?=\")");
+
+				
+		    	for (String splitFragment: splitFragments) {          
+			
 						if(splitQuote != ' ') {
 							splitFragment = splitFragment.replaceAll("^"+splitQuote+"|"+splitQuote+"$", "");				
 						}
@@ -158,7 +150,7 @@ public class Split {
 						bulkUpdate.add(subjectIri, predicateIri,
 									f.createLiteral(splitFragment), graphIri);
 						count++;
-					}
+					
 				} // for loop
 				
 				if ((count > splitBufferSize)) {
