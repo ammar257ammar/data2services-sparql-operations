@@ -11,6 +11,7 @@ import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
@@ -54,20 +55,24 @@ public class Split {
 	
 	public void executeSplitFromFile(String splitFile) throws IOException {
 		
-		try (
-	            Reader reader = Files.newBufferedReader(Paths.get(splitFile));
-	            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT);
-	        ) {
-	            for (CSVRecord csvRecord : csvParser) {
-	                // Accessing Values by Column Index
-	                String classToSplit = csvRecord.get(0);
-	                String propertyToSplit = csvRecord.get(1);
-	                String splitDelimiter = csvRecord.get(2);
-
-	                this.executeSplit(classToSplit, propertyToSplit, splitDelimiter.charAt(0), '"', true);
-	                
-	            }
-	        }
+		File sFile = new File(splitFile);
+		
+		if(sFile.exists()) {
+			try (
+		            Reader reader = Files.newBufferedReader(Paths.get(splitFile));
+		            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withDelimiter('\t'));
+		        ) {
+		            for (CSVRecord csvRecord : csvParser) {
+		                // Accessing Values by Column Index
+		                String classToSplit = csvRecord.get(0);
+		                String propertyToSplit = csvRecord.get(1);
+		                String splitDelimiter = csvRecord.get(2);
+	
+		                this.executeSplit(classToSplit, propertyToSplit, splitDelimiter.charAt(0), '"', true);
+		                
+		            }
+		        }
+		}
         
 	}
 
