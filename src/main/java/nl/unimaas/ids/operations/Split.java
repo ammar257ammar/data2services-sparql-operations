@@ -12,6 +12,9 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.eclipse.rdf4j.repository.RepositoryException;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -47,6 +50,25 @@ public class Split {
 		// sparqlUpdateExecutor =
 		// SparqlOperationFactory.getSparqlExecutor(QueryOperation.update,
 		// endpointUrl, username, password, variables);
+	}
+	
+	public void executeSplitFromFile(String splitFile) throws IOException {
+		
+		try (
+	            Reader reader = Files.newBufferedReader(Paths.get(splitFile));
+	            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT);
+	        ) {
+	            for (CSVRecord csvRecord : csvParser) {
+	                // Accessing Values by Column Index
+	                String classToSplit = csvRecord.get(0);
+	                String propertyToSplit = csvRecord.get(1);
+	                String splitDelimiter = csvRecord.get(2);
+
+	                this.executeSplit(classToSplit, propertyToSplit, splitDelimiter.charAt(0), '"', true);
+	                
+	            }
+	        }
+        
 	}
 
 	public TupleQueryResult executeSplit(String classToSplit,

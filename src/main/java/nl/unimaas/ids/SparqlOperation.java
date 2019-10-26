@@ -24,7 +24,12 @@ public class SparqlOperation {
 			
 			if (cli.queryOperation == QueryOperations.split) {
 				Split splitter = new Split(repo, cli.varOutputGraph, cli.splitBufferSize);
-				splitter.executeSplit(cli.splitClass, cli.splitProperty, cli.splitDelimiter,  cli.splitQuote, cli.splitDelete);
+				
+				if(cli.splitFile != null) {
+					splitter.executeSplitFromFile(cli.splitFile);
+				}else {
+					splitter.executeSplit(cli.splitClass, cli.splitProperty, cli.splitDelimiter,  cli.splitQuote, cli.splitDelete);					
+				}
 			
 			}else if (cli.queryOperation == QueryOperations.expand) {
 				Expand expanner = new Expand(repo, cli.varOutputGraph, cli.splitBufferSize);

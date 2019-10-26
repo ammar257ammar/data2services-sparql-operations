@@ -17,7 +17,9 @@ public class CliOptions {
 	
 	@Option(names= {"-op", "--operation"}, description = "SPARQL query operation (update, construct, select, split, expand). Default is update")
 	QueryOperations queryOperation = QueryOperations.update;
-	
+
+	@Option(names= {"--split-file-path"}, description = "Path of file that contains split rules")
+	String splitFile = null;
 	
 	// SPARQL endpoint params
 	@Option(names= {"-ep", "--sparql-endpoint"}, required = true, 
