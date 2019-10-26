@@ -55,9 +55,12 @@ public class Split {
 	
 	public void executeSplitFromFile(String splitFile) throws IOException {
 		
+		logger.info("Split through file");
+
 		File sFile = new File(splitFile);
 		
 		if(sFile.exists()) {
+			logger.info("Reading split file");
 			try (
 		            Reader reader = Files.newBufferedReader(Paths.get(splitFile));
 		            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withDelimiter('\t'));
@@ -72,6 +75,8 @@ public class Split {
 		                
 		            }
 		        }
+		}else {
+			logger.info("Split file does not exist");
 		}
         
 	}
