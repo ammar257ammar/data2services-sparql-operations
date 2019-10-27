@@ -94,13 +94,13 @@ public class Split {
 		if(splitDelimiter.equals("|")){
 			logger.info("escaping delimiter");
 			//delim = "\\|"; // this is for Graph db
-			delim = "|"; // this is for Virtuoso
+			delim = "\\|"; // this is for Virtuoso
 		
 				
 			queryString = "SELECT ?s ?p ?toSplit ?g WHERE {"
 				+ "    GRAPH ?g {" + "    	?s a <" + classToSplit + "> ;"
 				+ "      ?p ?toSplit ." + "    	FILTER(?p = <"
-				+ propertyToSplit + ">)." + "FILTER(regex(?toSplit, '\\\\"
+				+ propertyToSplit + ">)." + "FILTER(regex(?toSplit, '"
 				+ delim + "'))" + "    } }";
 		}else {
 
