@@ -100,7 +100,7 @@ public class Split {
 			queryString = "SELECT ?s ?p ?toSplit ?g WHERE {"
 				+ "    GRAPH ?g {" + "    	?s a <" + classToSplit + "> ;"
 				+ "      ?p ?toSplit ." + "    	FILTER(?p = <"
-				+ propertyToSplit + ">)." + "FILTER(regex(?toSplit, '\\"
+				+ propertyToSplit + ">)." + "FILTER(regex(?toSplit, '\\\\"
 				+ delim + "'))" + "    } }";
 		}else {
 
