@@ -90,26 +90,17 @@ public class Split {
 		String delim = splitDelimiter;
 			
 		String queryString = "";
-		
-		if(splitDelimiter.equals("|")){
-			logger.info("escaping delimiter");
-			//delim = "\\|"; // this is for Graph db
-			delim = "\\|"; // this is for Virtuoso
-		
 				
-			queryString = "SELECT ?s ?p ?toSplit ?g WHERE {"
+		if(splitDelimiter.equals(",\"")) {
+			delim = ",(?=\")";
+		}
+		
+		queryString = "SELECT ?s ?p ?toSplit ?g WHERE {"
 				+ "    GRAPH ?g {" + "    	?s a <" + classToSplit + "> ;"
 				+ "      ?p ?toSplit ." + "    	FILTER(?p = <"
-				+ propertyToSplit + ">)." + "FILTER(regex(?toSplit, '"
-				+ delim + "'))" + "    } }";
-		}else {
-
-			queryString = "SELECT ?s ?p ?toSplit ?g WHERE {"
-					+ "    GRAPH ?g {" + "    	?s a <" + classToSplit + "> ;"
-					+ "      ?p ?toSplit ." + "    	FILTER(?p = <"
-					+ propertyToSplit + ">)." + "FILTER(regex(?toSplit, '"
-					+ delim + "'))" + "    } }";
-		}
+				+ propertyToSplit + ">)." 
+				+ "FILTER(regex(?toSplit, '"+ delim + "'))" + "    } }";
+		
 		
 		System.out.println(queryString);
 		System.out.println();
@@ -148,7 +139,7 @@ public class Split {
 					graphIri = f.createIRI(bindingSet.getValue("g").stringValue());
 				}
 						
-		    	String[] splitFragments = stringToSplit.split(delim+"(?=\")");
+		    	String[] splitFragments = stringToSplit.split(delim);
 
 				
 		    	for (String splitFragment: splitFragments) {          
@@ -156,6 +147,10 @@ public class Split {
 						if(!splitQuote.equals(" ")) {
 							splitFragment = splitFragment.replaceAll("^"+splitQuote+"|"+splitQuote+"$", "");				
 						}
+				
+						if(splitFragment.indexOf("(") != -1) {
+		    					splitFragment = splitFragment.substring(0,splitFragment.indexOf("("));
+		    				}
 	
 						bulkUpdate.add(subjectIri, predicateIri,
 									f.createLiteral(splitFragment), graphIri);
