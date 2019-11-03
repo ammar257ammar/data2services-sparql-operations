@@ -26,7 +26,7 @@ public class SparqlOperation {
 				Split splitter = new Split(repo, cli.varOutputGraph, cli.splitBufferSize);
 				
 				if(cli.splitFile != null) {
-					splitter.executeSplitFromFile(cli.splitFile);
+					splitter.executeSplitFromFile(cli.splitFile, cli.splitDelete);
 				}else {
 					splitter.executeSplit(cli.splitClass, cli.splitProperty, cli.splitDelimiter,  cli.splitQuote, cli.splitDelete);					
 				}

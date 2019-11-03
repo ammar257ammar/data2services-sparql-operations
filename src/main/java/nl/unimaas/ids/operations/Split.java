@@ -53,7 +53,7 @@ public class Split {
 		// endpointUrl, username, password, variables);
 	}
 	
-	public void executeSplitFromFile(String splitFile) throws IOException {
+	public void executeSplitFromFile(String splitFile,boolean deleteSplittedTriples) throws IOException {
 		
 		logger.info("Split through file");
 
@@ -71,7 +71,7 @@ public class Split {
 		                String propertyToSplit = csvRecord.get(1);
 		                String splitDelimiter = csvRecord.get(2);
 	
-		                this.executeSplit(classToSplit, propertyToSplit, splitDelimiter, "\"", true);
+		                this.executeSplit(classToSplit, propertyToSplit, splitDelimiter, "\"", deleteSplittedTriples);
 		                
 		            }
 		        }
