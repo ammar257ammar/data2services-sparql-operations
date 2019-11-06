@@ -93,7 +93,7 @@ public class Split {
 				
 		if(splitDelimiter.equals(",\"")) {
 			delim = ",(?=\")";
-		}else if(splitDelimiter.equals("|")) {
+		}else if(splitDelimiter.equals("|") || splitDelimiter.equals("\\|") || splitDelimiter.equals("\\\\|")) {
 			delim = "\\|";
 		}
 		
