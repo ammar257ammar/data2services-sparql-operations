@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.regex.Pattern;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -93,8 +94,6 @@ public class Split {
 				
 		if(splitDelimiter.equals(",\"")) {
 			delim = ",(?=\")";
-		}else if(splitDelimiter.equals("|") || splitDelimiter.equals("\\|") || splitDelimiter.equals("\\\\|")) {
-			delim = "\\|";
 		}
 		
 		queryString = "SELECT ?s ?p ?toSplit ?g WHERE {"
@@ -140,8 +139,12 @@ public class Split {
 				if (!graphFromParam) {
 					graphIri = f.createIRI(bindingSet.getValue("g").stringValue());
 				}
-						
+
 		    	String[] splitFragments = stringToSplit.split(delim);
+
+				if(delim.equals("|")) {
+			    	splitFragments = stringToSplit.split(Pattern.quote(delim));
+				}
 
 				
 		    	for (String splitFragment: splitFragments) {          
