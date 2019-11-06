@@ -93,6 +93,8 @@ public class Split {
 				
 		if(splitDelimiter.equals(",\"")) {
 			delim = ",(?=\")";
+		}else if(splitDelimiter.equals("|")) {
+			delim = "\\|";
 		}
 		
 		queryString = "SELECT ?s ?p ?toSplit ?g WHERE {"
